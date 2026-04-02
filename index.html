@@ -1,129 +1,178 @@
 <!DOCTYPE html>
 <html lang="nl">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0f172a" />
-    <title>PakSlim</title>
-    <link rel="manifest" href="manifest.json" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="app-shell">
-      <header class="hero card">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1f2937" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <title>PakSlim</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div class="hero-top">
         <div>
-          <p class="eyebrow">Slim inpakken</p>
+          <p class="eyebrow">Mobiele paklijst</p>
           <h1>PakSlim</h1>
-          <p class="subtitle">Maak snel een paklijst voor kamp, weekend weg, vakantie of dagje weg.</p>
+          <p class="subtitle">Maak snel een slimme paklijst voor kamp, weekend weg, vakantie of een dagje weg.</p>
         </div>
-        <button id="themeToggle" class="ghost-btn" type="button">🌙 Thema</button>
-      </header>
 
-      <main>
-        <section class="card form-card">
-          <h2>Nieuwe trip</h2>
-          <form id="tripForm" class="trip-form">
+        <label class="theme-switcher" for="theme-select">
+          <span>Thema</span>
+          <select id="theme-select" aria-label="Kies een kleurenthema">
+            <option value="light">Licht</option>
+            <option value="dark">Donker</option>
+            <option value="sunset">Accent</option>
+          </select>
+        </label>
+      </div>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>Nieuwe trip</h2>
+        <form id="trip-form" class="trip-form">
+          <label>
+            Trip naam
+            <input type="text" id="trip-name" placeholder="Bijv. Kamp Open Hof" maxlength="50" />
+          </label>
+
+          <div class="grid two">
             <label>
-              <span>Trip naam</span>
-              <input type="text" id="tripName" placeholder="Bijv. Kamp Ardennen" required />
+              Soort trip
+              <select id="trip-type">
+                <option value="kamp">Kamp</option>
+                <option value="weekend">Weekend weg</option>
+                <option value="vakantie">Vakantie</option>
+                <option value="dagje">Dagje weg</option>
+              </select>
             </label>
 
-            <div class="grid two">
-              <label>
-                <span>Type trip</span>
-                <select id="tripType">
-                  <option value="kamp">Kamp</option>
-                  <option value="weekend">Weekend weg</option>
-                  <option value="vakantie">Vakantie</option>
-                  <option value="dagje">Dagje weg</option>
-                </select>
-              </label>
+            <label>
+              Aantal dagen
+              <input type="number" id="trip-days" min="1" max="30" value="3" />
+            </label>
+          </div>
 
-              <label>
-                <span>Aantal dagen</span>
-                <input type="number" id="tripDays" min="1" max="30" value="3" />
-              </label>
-            </div>
-
-            <fieldset>
-              <legend>Weer</legend>
-              <div class="chips" id="weatherGroup">
-                <label class="chip"><input type="checkbox" value="warm" /> <span>Warm</span></label>
-                <label class="chip"><input type="checkbox" value="normaal" checked /> <span>Normaal</span></label>
-                <label class="chip"><input type="checkbox" value="koud" /> <span>Koud</span></label>
-                <label class="chip"><input type="checkbox" value="regen" /> <span>Regen</span></label>
+          <div class="grid two">
+            <label>
+              Weer
+              <div id="trip-weather" class="weather-options" role="group" aria-label="Selecteer een of meer weertypes">
+                <label class="weather-option">
+                  <input type="checkbox" name="trip-weather" value="normaal" checked />
+                  <span>Normaal</span>
+                </label>
+                <label class="weather-option">
+                  <input type="checkbox" name="trip-weather" value="warm" />
+                  <span>Warm</span>
+                </label>
+                <label class="weather-option">
+                  <input type="checkbox" name="trip-weather" value="koud" />
+                  <span>Koud</span>
+                </label>
+                <label class="weather-option">
+                  <input type="checkbox" name="trip-weather" value="regen" />
+                  <span>Regen</span>
+                </label>
               </div>
-            </fieldset>
-
-            <label class="inline-toggle">
-              <input type="checkbox" id="overnight" checked />
-              <span>Overnachting</span>
             </label>
 
             <label>
-              <span>Notities</span>
-              <textarea id="tripNotes" rows="3" placeholder="Bijv. sportdag op zaterdag of nette kleding nodig"></textarea>
-            </label>
-
-            <div class="actions">
-              <button class="primary-btn" type="submit">Genereer paklijst</button>
-              <button class="secondary-btn" type="button" id="saveTripBtn">Opslaan</button>
-              <button class="ghost-btn" type="button" id="resetBtn">Reset</button>
-            </div>
-          </form>
-        </section>
-
-        <section class="card collapsible">
-          <div class="section-head">
-            <h2>Standaarditems</h2>
-            <button class="ghost-btn" type="button" data-toggle="defaultsPanel">Open</button>
-          </div>
-          <div id="defaultsPanel" class="panel hidden">
-            <div class="grid two">
-              <label>
-                <span>Type</span>
-                <select id="defaultType">
-                  <option value="always">Altijd meenemen</option>
-                  <option value="kamp">Alleen kamp</option>
-                  <option value="weekend">Alleen weekend</option>
-                  <option value="vakantie">Alleen vakantie</option>
-                  <option value="dagje">Alleen dagje weg</option>
-                </select>
-              </label>
-              <label>
-                <span>Item</span>
-                <input type="text" id="defaultItemInput" placeholder="Bijv. Oortjes" />
-              </label>
-            </div>
-            <button class="secondary-btn full" type="button" id="addDefaultBtn">Voeg standaarditem toe</button>
-            <div id="defaultLists" class="default-lists"></div>
-          </div>
-        </section>
-
-        <section class="card collapsible">
-          <div class="section-head">
-            <h2>Opgeslagen trips</h2>
-            <button class="ghost-btn" type="button" data-toggle="savedTripsPanel">Open</button>
-          </div>
-          <div id="savedTripsPanel" class="panel hidden">
-            <div id="savedTripsList" class="saved-trips"></div>
-          </div>
-        </section>
-
-        <section class="card list-card">
-          <div class="section-head wrap">
-            <div>
-              <h2>Paklijst</h2>
-              <p id="progressText" class="muted">Nog geen lijst gemaakt</p>
-            </div>
-            <label class="inline-toggle small">
-              <input type="checkbox" id="uncheckedOnly" />
-              <span>Alleen nog pakken</span>
+              Overnachting
+              <select id="trip-overnight">
+                <option value="ja">Ja</option>
+                <option value="nee">Nee</option>
+              </select>
             </label>
           </div>
 
-          <div class="add-row">
-            <select id="customCategory">
+          <div class="button-row">
+            <button type="submit" class="primary-btn">Genereer paklijst</button>
+            <button type="button" id="reset-btn" class="secondary-btn">Reset</button>
+          </div>
+        </form>
+
+        <details class="compact-section">
+          <summary>Persoonlijke standaarditems</summary>
+          <div class="compact-content">
+            <div class="grid defaults-grid">
+              <input type="text" id="personal-item-name" placeholder="Bijv. Lenzenvloeistof" maxlength="50" />
+              <select id="personal-item-category">
+                <option value="Essentieel">Essentieel</option>
+                <option value="Kleding">Kleding</option>
+                <option value="Toiletspullen">Toiletspullen</option>
+                <option value="Slapen">Slapen</option>
+                <option value="Elektronica">Elektronica</option>
+                <option value="Extra">Extra</option>
+              </select>
+              <select id="personal-item-scope">
+                <option value="always">Altijd toevoegen</option>
+                <option value="kamp">Alleen bij kamp</option>
+                <option value="weekend">Alleen bij weekend weg</option>
+                <option value="vakantie">Alleen bij vakantie</option>
+                <option value="dagje">Alleen bij dagje weg</option>
+              </select>
+              <select id="personal-item-weather">
+                <option value="any">Bij elk weer</option>
+                <option value="normaal">Alleen normaal</option>
+                <option value="warm">Alleen warm</option>
+                <option value="koud">Alleen koud</option>
+                <option value="regen">Alleen regen</option>
+              </select>
+              <button id="add-personal-item-btn" class="secondary-btn" type="button">Toevoegen</button>
+            </div>
+            <div id="personal-defaults-list" class="personal-defaults-list"></div>
+          </div>
+        </details>
+
+        <details class="compact-section">
+          <summary>Opgeslagen trips</summary>
+          <div class="compact-content">
+            <div class="saved-trips-toolbar">
+              <div class="search-group">
+                <input type="search" id="saved-trips-search" placeholder="Zoek op naam of type" maxlength="50" />
+                <button id="saved-trips-clear" class="mini-btn ghost-btn hidden" type="button">Wis</button>
+              </div>
+              <select id="saved-trips-sort" aria-label="Sorteer opgeslagen trips">
+                <option value="recent">Nieuwste eerst</option>
+                <option value="oldest">Oudste eerst</option>
+                <option value="name">Naam</option>
+              </select>
+            </div>
+            <div id="saved-trips-list" class="saved-trips-list"></div>
+          </div>
+        </details>
+      </section>
+
+      <section id="packing-section" class="card hidden">
+        <div class="section-top">
+          <div>
+            <p class="eyebrow">Huidige lijst</p>
+            <h2 id="trip-title">Jouw paklijst</h2>
+          </div>
+          <div class="progress-box">
+            <span id="progress-text">0 van 0 ingepakt</span>
+            <div class="progress-track"><div id="progress-bar"></div></div>
+          </div>
+        </div>
+
+        <div class="packing-toolbar">
+          <label class="toggle-chip" for="filter-unpacked">
+            <input type="checkbox" id="filter-unpacked" />
+            <span>Nog pakken</span>
+          </label>
+          <div class="save-trip-group">
+            <button id="save-trip-btn" class="secondary-btn toolbar-btn" type="button">Trip opslaan</button>
+            <span id="save-trip-feedback" class="save-trip-feedback hidden" aria-live="polite"></span>
+          </div>
+        </div>
+
+        <div class="add-item-panel">
+          <h3>Extra item toevoegen</h3>
+          <div class="grid add-grid">
+            <input type="text" id="custom-item-name" placeholder="Bijv. Powerbank" maxlength="50" />
+            <select id="custom-item-category">
               <option value="Essentieel">Essentieel</option>
               <option value="Kleding">Kleding</option>
               <option value="Toiletspullen">Toiletspullen</option>
@@ -131,17 +180,34 @@
               <option value="Elektronica">Elektronica</option>
               <option value="Extra">Extra</option>
             </select>
-            <input type="text" id="customItemInput" placeholder="Eigen item toevoegen" />
-            <button class="secondary-btn" type="button" id="addCustomItemBtn">Toevoegen</button>
+            <button id="add-item-btn" class="secondary-btn" type="button">Toevoegen</button>
           </div>
+        </div>
 
-          <div id="packingList" class="packing-list empty-state">
-            Maak eerst een trip aan om je paklijst te zien.
+        <div class="notes-panel">
+          <label for="trip-notes">
+            Notities
+            <textarea id="trip-notes" rows="3" placeholder="Bijv. Vergeet kampboekje of medicatieschema niet."></textarea>
+          </label>
+        </div>
+
+        <section id="suggestions-panel" class="suggestions-panel hidden" aria-live="polite">
+          <div class="suggestions-top">
+            <div>
+              <p class="eyebrow">Slimme suggesties</p>
+              <h3>Eerder gebruikt bij dit tripprofiel</h3>
+            </div>
+            <p id="suggestions-meta" class="suggestions-meta"></p>
           </div>
+          <div id="suggested-items" class="suggested-items"></div>
+          <p id="removed-items-note" class="removed-items-note hidden"></p>
         </section>
-      </main>
-    </div>
 
-    <script src="script.js"></script>
-  </body>
+        <div id="packing-list" class="packing-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
 </html>

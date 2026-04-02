@@ -1,11 +1,21 @@
 {
   "name": "PakSlim",
   "short_name": "PakSlim",
-  "start_url": ".",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
-  "lang": "nl",
-  "description": "Een simpele en slimme paklijst-app voor telefoon en web.",
-  "icons": []
+  "background_color": "#f3f4f6",
+  "theme_color": "#1f2937",
+  "description": "Mobiele paklijst-app voor kamp, weekend weg, vakantie en dagjes weg.",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }

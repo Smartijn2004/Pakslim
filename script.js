@@ -1,470 +1,1155 @@
-const STORAGE_KEYS = {
-  currentTrip: 'pakslim-current-trip',
-  savedTrips: 'pakslim-saved-trips',
-  defaults: 'pakslim-default-items',
-  theme: 'pakslim-theme'
+
+const STORAGE_KEY = "pakslim-state-v1";
+const HISTORY_STORAGE_KEY = "pakslim-history-v1";
+const THEME_STORAGE_KEY = "pakslim-theme-v1";
+const SETTINGS_STORAGE_KEY = "pakslim-settings-v1";
+const SAVED_TRIPS_STORAGE_KEY = "pakslim-saved-trips-v1";
+
+const categories = ["Essentieel", "Kleding", "Toiletspullen", "Slapen", "Elektronica", "Extra"];
+
+const tripTypeLabels = {
+  kamp: "Kamp",
+  weekend: "Weekend weg",
+  vakantie: "Vakantie",
+  dagje: "Dagje weg",
 };
 
-const CATEGORIES = ['Essentieel', 'Kleding', 'Toiletspullen', 'Slapen', 'Elektronica', 'Extra'];
-
-const BASE_ITEMS = {
-  Essentieel: ['Portemonnee', 'ID', 'Telefoon', 'Oplader', 'Sleutels', 'Medicatie'],
-  Kleding: ['Ondergoed', 'Sokken', 'T-shirts'],
-  Toiletspullen: ['Tandenborstel', 'Tandpasta', 'Deodorant'],
-  Slapen: [],
-  Elektronica: ['Powerbank'],
-  Extra: []
+const weatherLabels = {
+  normaal: "normaal weer",
+  warm: "warm weer",
+  koud: "koud weer",
+  regen: "regen",
 };
 
-const TRIP_TYPE_ITEMS = {
-  kamp: {
-    Slapen: ['Slaapzak', 'Luchtbed'],
-    Kleding: ['Sportkleding', 'Oude kleding', 'Regenjas'],
-    Extra: ['Zaklamp']
-  },
-  weekend: {
-    Kleding: ['Extra outfit', 'Pyjama', 'Casual schoenen'],
-    Toiletspullen: ['Toilettas'],
-    Elektronica: ['Oplader']
-  },
-  vakantie: {
-    Essentieel: ['Paspoort', 'Reisdocumenten'],
-    Kleding: ['Zwemkleding'],
-    Toiletspullen: ['Zonnebrand'],
-    Extra: ['Zonnebril']
-  },
-  dagje: {
-    Essentieel: ['Drinkfles'],
-    Extra: ['Snacks', 'Jas'],
-    Elektronica: ['Powerbank']
-  }
+const baseItems = [
+  { name: "Portemonnee", category: "Essentieel" },
+  { name: "ID", category: "Essentieel" },
+  { name: "Telefoon", category: "Essentieel" },
+  { name: "Oplader", category: "Elektronica" },
+  { name: "Sleutels", category: "Essentieel" },
+  { name: "Medicatie", category: "Essentieel" },
+  { name: "Tandenborstel", category: "Toiletspullen" },
+  { name: "Tandpasta", category: "Toiletspullen" },
+  { name: "Deodorant", category: "Toiletspullen" },
+];
+
+const tripItems = {
+  kamp: [
+    { name: "Slaapzak", category: "Slapen" },
+    { name: "Luchtbed", category: "Slapen" },
+    { name: "Zaklamp", category: "Extra" },
+    { name: "Sportkleding", category: "Kleding" },
+    { name: "Oude kleding", category: "Kleding" },
+    { name: "Regenjas", category: "Kleding" },
+  ],
+  weekend: [
+    { name: "Extra outfit", category: "Kleding" },
+    { name: "Toilettas", category: "Toiletspullen" },
+    { name: "Pyjama", category: "Kleding" },
+    { name: "Casual schoenen", category: "Kleding" },
+  ],
+  vakantie: [
+    { name: "Paspoort", category: "Essentieel" },
+    { name: "Reisdocumenten", category: "Essentieel" },
+    { name: "Zwemkleding", category: "Kleding" },
+    { name: "Zonnebrand", category: "Toiletspullen" },
+    { name: "Zonnebril", category: "Extra" },
+    { name: "Powerbank", category: "Elektronica" },
+  ],
+  dagje: [
+    { name: "Drinkfles", category: "Extra" },
+    { name: "Snacks", category: "Extra" },
+    { name: "Jas", category: "Kleding" },
+    { name: "Powerbank", category: "Elektronica" },
+  ],
 };
 
-const WEATHER_ITEMS = {
-  warm: { Kleding: ['Extra T-shirt'], Toiletspullen: ['Zonnebrand'], Extra: ['Pet'] },
-  koud: { Kleding: ['Trui', 'Dikke sokken'], Extra: ['Jas'] },
-  regen: { Kleding: ['Extra sokken', 'Regenjas'], Extra: ['Poncho'] },
-  normaal: {}
+const weatherItems = {
+  warm: [
+    { name: "Zonnebrand", category: "Toiletspullen" },
+    { name: "Pet", category: "Extra" },
+    { name: "Extra T-shirt", category: "Kleding" },
+  ],
+  koud: [
+    { name: "Trui", category: "Kleding" },
+    { name: "Dikke sokken", category: "Kleding" },
+    { name: "Warme jas", category: "Kleding" },
+  ],
+  regen: [
+    { name: "Regenjas", category: "Kleding" },
+    { name: "Extra sokken", category: "Kleding" },
+    { name: "Poncho of waterdichte tas", category: "Extra" },
+  ],
+  normaal: [],
 };
 
-const el = {
-  tripForm: document.getElementById('tripForm'),
-  tripName: document.getElementById('tripName'),
-  tripType: document.getElementById('tripType'),
-  tripDays: document.getElementById('tripDays'),
-  overnight: document.getElementById('overnight'),
-  tripNotes: document.getElementById('tripNotes'),
-  weatherGroup: document.getElementById('weatherGroup'),
-  packingList: document.getElementById('packingList'),
-  progressText: document.getElementById('progressText'),
-  customCategory: document.getElementById('customCategory'),
-  customItemInput: document.getElementById('customItemInput'),
-  addCustomItemBtn: document.getElementById('addCustomItemBtn'),
-  resetBtn: document.getElementById('resetBtn'),
-  saveTripBtn: document.getElementById('saveTripBtn'),
-  savedTripsList: document.getElementById('savedTripsList'),
-  defaultType: document.getElementById('defaultType'),
-  defaultItemInput: document.getElementById('defaultItemInput'),
-  addDefaultBtn: document.getElementById('addDefaultBtn'),
-  defaultLists: document.getElementById('defaultLists'),
-  uncheckedOnly: document.getElementById('uncheckedOnly'),
-  themeToggle: document.getElementById('themeToggle')
+const elements = {
+  form: document.getElementById("trip-form"),
+  themeSelect: document.getElementById("theme-select"),
+  tripName: document.getElementById("trip-name"),
+  tripType: document.getElementById("trip-type"),
+  tripDays: document.getElementById("trip-days"),
+  tripWeather: Array.from(document.querySelectorAll('input[name="trip-weather"]')),
+  tripOvernight: document.getElementById("trip-overnight"),
+  resetBtn: document.getElementById("reset-btn"),
+  packingSection: document.getElementById("packing-section"),
+  packingList: document.getElementById("packing-list"),
+  suggestionsPanel: document.getElementById("suggestions-panel"),
+  suggestionsMeta: document.getElementById("suggestions-meta"),
+  suggestedItems: document.getElementById("suggested-items"),
+  removedItemsNote: document.getElementById("removed-items-note"),
+  tripTitle: document.getElementById("trip-title"),
+  progressText: document.getElementById("progress-text"),
+  progressBar: document.getElementById("progress-bar"),
+  filterUnpacked: document.getElementById("filter-unpacked"),
+  saveTripBtn: document.getElementById("save-trip-btn"),
+  tripNotes: document.getElementById("trip-notes"),
+  customItemName: document.getElementById("custom-item-name"),
+  customItemCategory: document.getElementById("custom-item-category"),
+  addItemBtn: document.getElementById("add-item-btn"),
+  personalItemName: document.getElementById("personal-item-name"),
+  personalItemCategory: document.getElementById("personal-item-category"),
+  personalItemScope: document.getElementById("personal-item-scope"),
+  personalItemWeather: document.getElementById("personal-item-weather"),
+  addPersonalItemBtn: document.getElementById("add-personal-item-btn"),
+  personalDefaultsList: document.getElementById("personal-defaults-list"),
+  savedTripsSearch: document.getElementById("saved-trips-search"),
+  savedTripsClear: document.getElementById("saved-trips-clear"),
+  savedTripsSort: document.getElementById("saved-trips-sort"),
+  savedTripsList: document.getElementById("saved-trips-list"),
+  saveTripFeedback: document.getElementById("save-trip-feedback"),
 };
 
-let state = {
-  currentTrip: null,
-  savedTrips: loadJson(STORAGE_KEYS.savedTrips, []),
-  defaults: loadJson(STORAGE_KEYS.defaults, { always: [], kamp: [], weekend: [], vakantie: [], dagje: [] }),
-  theme: localStorage.getItem(STORAGE_KEYS.theme) || 'dark'
-};
+let appState = loadState();
+let historyState = loadHistory();
+let settingsState = loadSettings();
+let savedTrips = loadSavedTrips();
+let themeState = loadTheme();
+let draggedItemId = null;
+let saveTripFeedbackTimer = null;
 
-function loadJson(key, fallback) {
+function uniqueId() {
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function normalizeItemName(name) {
+  return name.trim().toLowerCase();
+}
+
+function makeItem(name, category, packed = false) {
+  return { id: uniqueId(), name, category, packed };
+}
+
+function cloneItemsWithFreshIds(items) {
+  return items.map((item) => makeItem(item.name, item.category, Boolean(item.packed)));
+}
+
+function addIfMissing(list, item) {
+  const exists = list.some((entry) => normalizeItemName(entry.name) === normalizeItemName(item.name));
+  if (!exists) list.push(makeItem(item.name, item.category, Boolean(item.packed)));
+}
+
+function createEmptySettings() {
+  return {
+    always: [],
+    tripTypes: { kamp: [], weekend: [], vakantie: [], dagje: [] },
+    weatherTypes: { normaal: [], warm: [], koud: [], regen: [] },
+    comboTypes: {},
+  };
+}
+
+function createEmptyAppState() {
+  return { trip: null, items: [], savedTripId: null, filterUnchecked: false };
+}
+
+function normalizeWeatherSelection(weather) {
+  const weatherList = Array.isArray(weather) ? weather : weather ? [weather] : ["normaal"];
+  const uniqueWeather = [...new Set(weatherList)];
+  if (!uniqueWeather.length) return ["normaal"];
+  if (uniqueWeather.length > 1) return uniqueWeather.filter((type) => type !== "normaal");
+  return uniqueWeather;
+}
+
+function normalizeTrip(trip) {
+  if (!trip) return null;
+  return {
+    tripName: trip.tripName || "",
+    tripType: trip.tripType || "kamp",
+    days: Math.max(1, Number(trip.days) || 1),
+    weather: normalizeWeatherSelection(trip.weather),
+    overnight: trip.overnight || "ja",
+    notes: trip.notes || "",
+  };
+}
+
+function normalizeSettings(settings) {
+  const base = createEmptySettings();
+  if (!settings) return base;
+
+  const normalizeItems = (items) => Array.isArray(items)
+    ? items.filter((item) => item?.name && item?.category).map((item) => ({ name: item.name, category: item.category }))
+    : [];
+
+  return {
+    always: normalizeItems(settings.always),
+    tripTypes: {
+      kamp: normalizeItems(settings.tripTypes?.kamp),
+      weekend: normalizeItems(settings.tripTypes?.weekend),
+      vakantie: normalizeItems(settings.tripTypes?.vakantie),
+      dagje: normalizeItems(settings.tripTypes?.dagje),
+    },
+    weatherTypes: {
+      normaal: normalizeItems(settings.weatherTypes?.normaal),
+      warm: normalizeItems(settings.weatherTypes?.warm),
+      koud: normalizeItems(settings.weatherTypes?.koud),
+      regen: normalizeItems(settings.weatherTypes?.regen),
+    },
+    comboTypes: Object.fromEntries(
+      Object.entries(settings.comboTypes || {})
+        .map(([key, items]) => [key, normalizeItems(items)])
+        .filter(([, items]) => items.length)
+    ),
+  };
+}
+function normalizeSavedTrip(entry) {
+  if (!entry?.trip || !Array.isArray(entry.items)) return null;
+
+  const trip = normalizeTrip(entry.trip);
+  const items = entry.items
+    .filter((item) => item?.name && item?.category)
+    .map((item) => ({ name: item.name, category: item.category, packed: Boolean(item.packed) }));
+
+  return {
+    id: entry.id || uniqueId(),
+    name: entry.name || getTripDisplayName(trip),
+    trip,
+    items,
+    savedAt: entry.savedAt || new Date().toISOString(),
+  };
+}
+
+function normalizeAppState(state) {
+  const base = createEmptyAppState();
+  if (!state) return base;
+
+  return {
+    trip: normalizeTrip(state.trip),
+    items: Array.isArray(state.items)
+      ? state.items.filter((item) => item?.name && item?.category).map((item) => makeItem(item.name, item.category, Boolean(item.packed)))
+      : [],
+    savedTripId: state.savedTripId || null,
+    filterUnchecked: Boolean(state.filterUnchecked),
+  };
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    trip: appState.trip,
+    items: appState.items,
+    savedTripId: appState.savedTripId,
+    filterUnchecked: appState.filterUnchecked,
+  }));
+}
+
+function loadState() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return createEmptyAppState();
   try {
-    const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : fallback;
+    return normalizeAppState(JSON.parse(saved));
   } catch {
-    return fallback;
+    return createEmptyAppState();
   }
 }
 
-function saveJson(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
+function saveHistory() {
+  localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(historyState));
 }
 
-function createItem(name, category, count = null) {
-  return {
-    id: crypto.randomUUID(),
-    name,
-    category,
-    checked: false,
-    count
-  };
-}
-
-function addItemToMap(map, category, name, count = null) {
-  if (!name) return;
-  if (!map[category]) map[category] = [];
-  const exists = map[category].some(item => item.name.toLowerCase() === name.toLowerCase());
-  if (!exists) map[category].push(createItem(name, category, count));
-}
-
-function getSelectedWeather() {
-  return [...el.weatherGroup.querySelectorAll('input[type="checkbox"]:checked')].map(input => input.value);
-}
-
-function buildTripFromForm() {
-  const tripName = el.tripName.value.trim();
-  const tripType = el.tripType.value;
-  const days = Math.max(1, Number(el.tripDays.value) || 1);
-  const weather = getSelectedWeather();
-  const notes = el.tripNotes.value.trim();
-  const overnight = el.overnight.checked;
-
-  const itemMap = Object.fromEntries(CATEGORIES.map(category => [category, []]));
-
-  for (const [category, items] of Object.entries(BASE_ITEMS)) {
-    items.forEach(item => addItemToMap(itemMap, category, item));
+function loadHistory() {
+  const saved = localStorage.getItem(HISTORY_STORAGE_KEY);
+  if (!saved) return {};
+  try {
+    return JSON.parse(saved);
+  } catch {
+    return {};
   }
+}
 
-  addItemToMap(itemMap, 'Kleding', 'Ondergoed', days);
-  addItemToMap(itemMap, 'Kleding', 'Sokken', days);
-  addItemToMap(itemMap, 'Kleding', 'T-shirts', days);
-  addItemToMap(itemMap, 'Kleding', 'Broeken', Math.max(1, Math.ceil(days / 3)));
+function saveSettings() {
+  localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settingsState));
+}
 
-  const tripTypeItems = TRIP_TYPE_ITEMS[tripType] || {};
-  for (const [category, items] of Object.entries(tripTypeItems)) {
-    items.forEach(item => addItemToMap(itemMap, category, item));
+function loadSettings() {
+  const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
+  if (!saved) return createEmptySettings();
+  try {
+    return normalizeSettings(JSON.parse(saved));
+  } catch {
+    return createEmptySettings();
   }
+}
 
-  weather.forEach(type => {
-    const weatherItems = WEATHER_ITEMS[type] || {};
-    for (const [category, items] of Object.entries(weatherItems)) {
-      items.forEach(item => addItemToMap(itemMap, category, item));
-    }
-  });
+function saveSavedTrips() {
+  localStorage.setItem(SAVED_TRIPS_STORAGE_KEY, JSON.stringify(savedTrips));
+}
 
-  if (!overnight) {
-    itemMap['Slapen'] = [];
-    itemMap['Kleding'] = itemMap['Kleding'].filter(item => !['Pyjama'].includes(item.name));
+function loadSavedTrips() {
+  const saved = localStorage.getItem(SAVED_TRIPS_STORAGE_KEY);
+  if (!saved) return [];
+  try {
+    return JSON.parse(saved).map((entry) => normalizeSavedTrip(entry)).filter(Boolean);
+  } catch {
+    return [];
   }
-
-  state.defaults.always.forEach(item => addItemToMap(itemMap, 'Extra', item));
-  (state.defaults[tripType] || []).forEach(item => addItemToMap(itemMap, 'Extra', item));
-
-  return {
-    id: crypto.randomUUID(),
-    name: tripName,
-    tripType,
-    days,
-    weather,
-    overnight,
-    notes,
-    items: Object.values(itemMap).flat(),
-    createdAt: new Date().toISOString()
-  };
 }
 
-function renderPackingList() {
-  const trip = state.currentTrip;
-  if (!trip || !trip.items?.length) {
-    el.packingList.className = 'packing-list empty-state';
-    el.packingList.innerHTML = 'Maak eerst een trip aan om je paklijst te zien.';
-    el.progressText.textContent = 'Nog geen lijst gemaakt';
-    return;
-  }
-
-  const showUncheckedOnly = el.uncheckedOnly.checked;
-  const grouped = Object.fromEntries(CATEGORIES.map(category => [category, []]));
-
-  trip.items.forEach(item => {
-    if (!showUncheckedOnly || !item.checked) {
-      if (!grouped[item.category]) grouped[item.category] = [];
-      grouped[item.category].push(item);
-    }
-  });
-
-  const total = trip.items.length;
-  const done = trip.items.filter(item => item.checked).length;
-  const percentage = total ? Math.round((done / total) * 100) : 0;
-
-  el.progressText.innerHTML = `${done} van ${total} ingepakt
-    <div class="progress-bar"><div class="progress-fill" style="width:${percentage}%"></div></div>`;
-
-  const html = CATEGORIES.map(category => {
-    const items = grouped[category] || [];
-    if (!items.length) return '';
-
-    return `
-      <section class="category" data-category="${category}">
-        <div class="category-head">
-          <h3>${category}</h3>
-          <span class="count-badge">${items.length}</span>
-        </div>
-        <div>
-          ${items.map(item => `
-            <div class="item-row" data-id="${item.id}">
-              <div class="item-main">
-                <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleItem('${item.id}')" />
-                <span class="${item.checked ? 'checked' : ''}">${item.name}${item.count ? ` (${item.count}x)` : ''}</span>
-              </div>
-              <div class="item-actions">
-                <button class="ghost-btn" type="button" onclick="moveItemPrompt('${item.id}')">Verplaats</button>
-                <button class="danger-btn" type="button" onclick="deleteItem('${item.id}')">Verwijder</button>
-              </div>
-            </div>`).join('')}
-        </div>
-      </section>`;
-  }).join('');
-
-  el.packingList.className = 'packing-list';
-  el.packingList.innerHTML = html || '<div class="empty-state">Geen items zichtbaar met dit filter.</div>';
+function saveTheme(theme) {
+  localStorage.setItem(THEME_STORAGE_KEY, theme);
 }
 
-function persistCurrentTrip() {
-  saveJson(STORAGE_KEYS.currentTrip, state.currentTrip);
+function loadTheme() {
+  const saved = localStorage.getItem(THEME_STORAGE_KEY);
+  return ["light", "dark", "sunset"].includes(saved) ? saved : "light";
 }
 
-function syncFormFromTrip(trip) {
-  el.tripName.value = trip.name || '';
-  el.tripType.value = trip.tripType || 'kamp';
-  el.tripDays.value = trip.days || 1;
-  el.overnight.checked = trip.overnight ?? true;
-  el.tripNotes.value = trip.notes || '';
-
-  const selected = new Set(trip.weather || ['normaal']);
-  el.weatherGroup.querySelectorAll('input[type="checkbox"]').forEach(input => {
-    input.checked = selected.has(input.value);
-  });
-}
-
-function saveCurrentTripToLibrary() {
-  if (!state.currentTrip) {
-    alert('Maak eerst een paklijst voordat je opslaat.');
-    return;
-  }
-
-  const existingIndex = state.savedTrips.findIndex(trip => trip.id === state.currentTrip.id);
-  if (existingIndex >= 0) {
-    state.savedTrips[existingIndex] = structuredClone(state.currentTrip);
-  } else {
-    state.savedTrips.unshift(structuredClone(state.currentTrip));
-  }
-
-  saveJson(STORAGE_KEYS.savedTrips, state.savedTrips);
-  renderSavedTrips();
-  alert('Trip opgeslagen.');
-}
-
-function renderSavedTrips() {
-  if (!state.savedTrips.length) {
-    el.savedTripsList.innerHTML = '<div class="empty-state">Nog geen trips opgeslagen.</div>';
-    return;
-  }
-
-  el.savedTripsList.innerHTML = state.savedTrips.map(trip => `
-    <article class="saved-trip">
-      <div class="saved-trip-head">
-        <div>
-          <h3>${trip.name}</h3>
-          <p class="muted">${labelTripType(trip.tripType)} · ${trip.days} dag(en) · ${(trip.weather || []).join(', ') || 'normaal'}</p>
-        </div>
-        <div class="saved-trip-actions">
-          <button class="secondary-btn" type="button" onclick="openSavedTrip('${trip.id}')">Open</button>
-          <button class="ghost-btn" type="button" onclick="duplicateTrip('${trip.id}')">Dupliceer</button>
-          <button class="danger-btn" type="button" onclick="deleteSavedTrip('${trip.id}')">Verwijder</button>
-        </div>
-      </div>
-    </article>
-  `).join('');
-}
-
-function labelTripType(value) {
-  return {
-    kamp: 'Kamp',
-    weekend: 'Weekend weg',
-    vakantie: 'Vakantie',
-    dagje: 'Dagje weg'
-  }[value] || value;
-}
-
-function renderDefaults() {
-  const sections = [
-    ['always', 'Altijd meenemen'],
-    ['kamp', 'Kamp'],
-    ['weekend', 'Weekend weg'],
-    ['vakantie', 'Vakantie'],
-    ['dagje', 'Dagje weg']
-  ];
-
-  el.defaultLists.innerHTML = sections.map(([key, label]) => `
-    <section class="default-group">
-      <div class="category-head">
-        <h3>${label}</h3>
-        <span class="count-badge">${(state.defaults[key] || []).length}</span>
-      </div>
-      <div>
-        ${(state.defaults[key] || []).length
-          ? state.defaults[key].map(item => `
-              <div class="item-row">
-                <div class="item-main"><span>${item}</span></div>
-                <div class="item-actions">
-                  <button class="danger-btn" type="button" onclick="removeDefaultItem('${key}', '${escapeQuotes(item)}')">Verwijder</button>
-                </div>
-              </div>`).join('')
-          : '<div class="muted">Nog geen items toegevoegd.</div>'}
-      </div>
-    </section>
-  `).join('');
-}
-
-function escapeQuotes(text) {
-  return text.replace(/'/g, "\\'");
-}
-
-function addDefaultItem() {
-  const key = el.defaultType.value;
-  const item = el.defaultItemInput.value.trim();
-  if (!item) return;
-  const exists = (state.defaults[key] || []).some(value => value.toLowerCase() === item.toLowerCase());
-  if (!exists) state.defaults[key].push(item);
-  saveJson(STORAGE_KEYS.defaults, state.defaults);
-  el.defaultItemInput.value = '';
-  renderDefaults();
-}
-
-function removeDefaultItem(key, item) {
-  state.defaults[key] = (state.defaults[key] || []).filter(value => value !== item);
-  saveJson(STORAGE_KEYS.defaults, state.defaults);
-  renderDefaults();
-}
-
-function addCustomItem() {
-  if (!state.currentTrip) {
-    alert('Maak eerst een trip aan.');
-    return;
-  }
-
-  const category = el.customCategory.value;
-  const name = el.customItemInput.value.trim();
-  if (!name) return;
-
-  state.currentTrip.items.push(createItem(name, category));
-  el.customItemInput.value = '';
-  persistCurrentTrip();
-  renderPackingList();
-}
-
-function toggleItem(id) {
-  const item = state.currentTrip?.items.find(entry => entry.id === id);
-  if (!item) return;
-  item.checked = !item.checked;
-  persistCurrentTrip();
-  renderPackingList();
-}
-
-function deleteItem(id) {
-  if (!state.currentTrip) return;
-  state.currentTrip.items = state.currentTrip.items.filter(item => item.id !== id);
-  persistCurrentTrip();
-  renderPackingList();
-}
-
-function moveItemPrompt(id) {
-  const item = state.currentTrip?.items.find(entry => entry.id === id);
-  if (!item) return;
-  const newCategory = prompt(`Naar welke categorie wil je \"${item.name}\" verplaatsen?\nKies uit: ${CATEGORIES.join(', ')}`, item.category);
-  if (!newCategory || !CATEGORIES.includes(newCategory)) return;
-  item.category = newCategory;
-  persistCurrentTrip();
-  renderPackingList();
-}
-
-function openSavedTrip(id) {
-  const trip = state.savedTrips.find(entry => entry.id === id);
-  if (!trip) return;
-  state.currentTrip = structuredClone(trip);
-  persistCurrentTrip();
-  syncFormFromTrip(state.currentTrip);
-  renderPackingList();
-}
-
-function duplicateTrip(id) {
-  const trip = state.savedTrips.find(entry => entry.id === id);
-  if (!trip) return;
-  const copy = structuredClone(trip);
-  copy.id = crypto.randomUUID();
-  copy.name = `${copy.name} (kopie)`;
-  copy.createdAt = new Date().toISOString();
-  state.savedTrips.unshift(copy);
-  saveJson(STORAGE_KEYS.savedTrips, state.savedTrips);
-  renderSavedTrips();
-}
-
-function deleteSavedTrip(id) {
-  state.savedTrips = state.savedTrips.filter(entry => entry.id !== id);
-  saveJson(STORAGE_KEYS.savedTrips, state.savedTrips);
-  renderSavedTrips();
-}
-
-function resetApp() {
-  state.currentTrip = null;
-  localStorage.removeItem(STORAGE_KEYS.currentTrip);
-  el.tripForm.reset();
-  const normalCheckbox = el.weatherGroup.querySelector('input[value="normaal"]');
-  if (normalCheckbox) normalCheckbox.checked = true;
-  renderPackingList();
+function updateThemeColorMeta() {
+  const themeColor = getComputedStyle(document.body).getPropertyValue("--primary").trim();
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  if (metaThemeColor && themeColor) metaThemeColor.setAttribute("content", themeColor);
 }
 
 function applyTheme(theme) {
-  state.theme = theme;
-  document.body.classList.toggle('light', theme === 'light');
-  localStorage.setItem(STORAGE_KEYS.theme, theme);
+  themeState = ["light", "dark", "sunset"].includes(theme) ? theme : "light";
+  document.body.dataset.theme = themeState;
+  elements.themeSelect.value = themeState;
+  updateThemeColorMeta();
 }
 
-function initPanels() {
-  document.querySelectorAll('[data-toggle]').forEach(button => {
-    button.addEventListener('click', () => {
-      const panel = document.getElementById(button.dataset.toggle);
-      if (!panel) return;
-      panel.classList.toggle('hidden');
-      button.textContent = panel.classList.contains('hidden') ? 'Open' : 'Sluit';
-    });
+function getSelectedWeather() {
+  const selected = elements.tripWeather.filter((input) => input.checked).map((input) => input.value);
+  return normalizeWeatherSelection(selected);
+}
+
+function setSelectedWeather(weather) {
+  const normalizedWeather = normalizeWeatherSelection(weather);
+  elements.tripWeather.forEach((input) => {
+    input.checked = normalizedWeather.includes(input.value);
   });
 }
 
-el.tripForm.addEventListener('submit', event => {
-  event.preventDefault();
-  state.currentTrip = buildTripFromForm();
-  persistCurrentTrip();
-  renderPackingList();
-});
+function addQuantities(list, days, overnight) {
+  const adjustedDays = overnight === "nee" ? 1 : days;
+  const clothingCounts = [
+    { name: `Ondergoed (${adjustedDays})`, category: "Kleding" },
+    { name: `Sokken (${adjustedDays})`, category: "Kleding" },
+    { name: `T-shirts (${adjustedDays})`, category: "Kleding" },
+    { name: `Broeken (${Math.max(1, Math.ceil(adjustedDays / 3))})`, category: "Kleding" },
+  ];
 
-el.saveTripBtn.addEventListener('click', saveCurrentTripToLibrary);
-el.addCustomItemBtn.addEventListener('click', addCustomItem);
-el.resetBtn.addEventListener('click', resetApp);
-el.addDefaultBtn.addEventListener('click', addDefaultItem);
-el.uncheckedOnly.addEventListener('change', renderPackingList);
-el.themeToggle.addEventListener('click', () => applyTheme(state.theme === 'dark' ? 'light' : 'dark'));
+  clothingCounts.forEach((item) => addIfMissing(list, item));
 
-window.toggleItem = toggleItem;
-window.deleteItem = deleteItem;
-window.moveItemPrompt = moveItemPrompt;
-window.openSavedTrip = openSavedTrip;
-window.duplicateTrip = duplicateTrip;
-window.deleteSavedTrip = deleteSavedTrip;
-window.removeDefaultItem = removeDefaultItem;
+  if (overnight === "ja") {
+    addIfMissing(list, { name: "Pyjama", category: "Kleding" });
+    addIfMissing(list, { name: "Handdoek", category: "Toiletspullen" });
+  }
+}
 
-(function init() {
-  initPanels();
-  applyTheme(state.theme);
-  renderDefaults();
-  renderSavedTrips();
+function buildBaseItems({ tripType, days, weather, overnight }) {
+  const items = [];
+  const selectedWeather = normalizeWeatherSelection(weather);
 
-  const savedCurrentTrip = loadJson(STORAGE_KEYS.currentTrip, null);
-  if (savedCurrentTrip) {
-    state.currentTrip = savedCurrentTrip;
-    syncFormFromTrip(savedCurrentTrip);
+  baseItems.forEach((item) => addIfMissing(items, item));
+  (tripItems[tripType] || []).forEach((item) => addIfMissing(items, item));
+  selectedWeather.forEach((weatherType) => {
+    (weatherItems[weatherType] || []).forEach((item) => addIfMissing(items, item));
+  });
+  settingsState.always.forEach((item) => addIfMissing(items, item));
+  (settingsState.tripTypes[tripType] || []).forEach((item) => addIfMissing(items, item));
+  selectedWeather.forEach((weatherType) => {
+    (settingsState.weatherTypes[weatherType] || []).forEach((item) => addIfMissing(items, item));
+    (settingsState.comboTypes[`${tripType}__${weatherType}`] || []).forEach((item) => addIfMissing(items, item));
+  });
+  addQuantities(items, days, overnight);
+
+  if (overnight === "nee") {
+    ["Slaapzak", "Luchtbed", "Pyjama"].forEach((name) => {
+      const index = items.findIndex((item) => normalizeItemName(item.name) === normalizeItemName(name));
+      if (index !== -1) items.splice(index, 1);
+    });
   }
 
+  return items;
+}
+
+function generatePackingList({ tripName, tripType, days, weather, overnight, notes }) {
+  const trip = normalizeTrip({ tripName, tripType, days, weather, overnight, notes });
+  return { trip, items: buildBaseItems(trip), savedTripId: null, filterUnchecked: false };
+}
+
+function labelForTripType(type) {
+  return tripTypeLabels[type] || "Trip";
+}
+
+function getTripDisplayName(trip) {
+  const cleanName = trip?.tripName?.trim();
+  return cleanName || `Paklijst: ${labelForTripType(trip?.tripType)}`;
+}
+
+function getTripProfileKey(trip) {
+  const weather = normalizeWeatherSelection(trip.weather).slice().sort().join("+");
+  return `${trip.tripType}__${weather}`;
+}
+
+function getTripProfileLabel(trip) {
+  const weatherText = normalizeWeatherSelection(trip.weather).map((type) => weatherLabels[type] || type).join(", ");
+  return `${labelForTripType(trip.tripType)} - ${weatherText}`;
+}
+
+function collectTripAdjustments(trip, items) {
+  const baseItemsForTrip = buildBaseItems(trip);
+  const currentMap = new Map(items.map((item) => [normalizeItemName(item.name), item]));
+  const baseMap = new Map(baseItemsForTrip.map((item) => [normalizeItemName(item.name), item]));
+
+  const addedItems = items
+    .filter((item) => !baseMap.has(normalizeItemName(item.name)))
+    .map((item) => ({ name: item.name, category: item.category }));
+
+  const removedItems = baseItemsForTrip
+    .filter((item) => !currentMap.has(normalizeItemName(item.name)))
+    .map((item) => ({ name: item.name, category: item.category }));
+
+  return { addedItems, removedItems };
+}
+
+function persistHistoryForCurrentTrip() {
+  if (!appState.trip) return;
+
+  historyState[getTripProfileKey(appState.trip)] = {
+    tripType: appState.trip.tripType,
+    weather: normalizeWeatherSelection(appState.trip.weather),
+    updatedAt: new Date().toISOString(),
+    ...collectTripAdjustments(appState.trip, appState.items),
+  };
+
+  saveHistory();
+}
+function getSuggestionsForTrip(trip, currentItems = []) {
+  const profile = historyState[getTripProfileKey(trip)];
+  if (!profile) return null;
+
+  const currentNames = new Set(currentItems.map((item) => normalizeItemName(item.name)));
+  const suggestedItems = (profile.addedItems || []).filter(
+    (item) => !currentNames.has(normalizeItemName(item.name))
+  );
+
+  return { ...profile, suggestedItems };
+}
+
+function commitState({ updateHistory = false, syncSavedTrip = true } = {}) {
+  saveState();
+  if (updateHistory) persistHistoryForCurrentTrip();
+  if (syncSavedTrip) syncCurrentTripToSavedTrip();
+}
+
+function syncCurrentTripToSavedTrip() {
+  if (!appState.savedTripId) return;
+
+  const index = savedTrips.findIndex((trip) => trip.id === appState.savedTripId);
+  if (index === -1) {
+    appState.savedTripId = null;
+    saveState();
+    return;
+  }
+
+  savedTrips[index] = {
+    id: appState.savedTripId,
+    name: getTripDisplayName(appState.trip),
+    trip: normalizeTrip(appState.trip),
+    items: appState.items.map((item) => ({ name: item.name, category: item.category, packed: Boolean(item.packed) })),
+    savedAt: new Date().toISOString(),
+  };
+
+  saveSavedTrips();
+  renderSavedTrips();
+}
+
+function fillFormFromState() {
+  if (!appState.trip) {
+    elements.tripNotes.value = "";
+    return;
+  }
+
+  elements.tripName.value = appState.trip.tripName || "";
+  elements.tripType.value = appState.trip.tripType || "kamp";
+  elements.tripDays.value = appState.trip.days || 3;
+  setSelectedWeather(appState.trip.weather || ["normaal"]);
+  elements.tripOvernight.value = appState.trip.overnight || "ja";
+  elements.tripNotes.value = appState.trip.notes || "";
+}
+
+function updateSaveTripButton() {
+  elements.saveTripBtn.textContent = appState.savedTripId ? "Trip bijwerken" : "Trip opslaan";
+}
+
+function renderPersonalDefaults() {
+  const groups = [
+    { key: "always", label: "Altijd toevoegen", items: settingsState.always },
+    { key: "kamp", label: "Kamp", items: settingsState.tripTypes.kamp },
+    { key: "weekend", label: "Weekend weg", items: settingsState.tripTypes.weekend },
+    { key: "vakantie", label: "Vakantie", items: settingsState.tripTypes.vakantie },
+    { key: "dagje", label: "Dagje weg", items: settingsState.tripTypes.dagje },
+    { key: "weather:normaal", label: "Normaal weer", items: settingsState.weatherTypes.normaal },
+    { key: "weather:warm", label: "Warm weer", items: settingsState.weatherTypes.warm },
+    { key: "weather:koud", label: "Koud weer", items: settingsState.weatherTypes.koud },
+    { key: "weather:regen", label: "Regen", items: settingsState.weatherTypes.regen },
+  ];
+  const comboGroups = Object.entries(settingsState.comboTypes)
+    .filter(([, items]) => items.length)
+    .map(([key, items]) => {
+      const [tripType, weatherType] = key.split("__");
+      return {
+        key: `combo:${key}`,
+        label: `${labelForTripType(tripType)} + ${weatherLabels[weatherType] || weatherType}`,
+        items,
+      };
+    });
+
+  elements.personalDefaultsList.innerHTML = "";
+
+  [...groups, ...comboGroups].forEach((group) => {
+    const section = document.createElement("div");
+    section.className = "defaults-group";
+
+    const title = document.createElement("div");
+    title.className = "defaults-group-title";
+    title.textContent = group.label;
+    section.appendChild(title);
+
+    if (!group.items.length) {
+      const emptyNote = document.createElement("p");
+      emptyNote.className = "empty-note";
+      emptyNote.textContent = "Nog geen items toegevoegd.";
+      section.appendChild(emptyNote);
+    } else {
+      group.items.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "compact-item-row";
+
+        const copy = document.createElement("div");
+        copy.className = "compact-item-copy";
+        copy.innerHTML = `<span class="compact-item-name">${item.name}</span><span class="compact-item-meta">${item.category}</span>`;
+
+        const actions = document.createElement("div");
+        actions.className = "compact-item-actions";
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.className = "mini-btn danger";
+        deleteBtn.textContent = "Verwijder";
+        deleteBtn.addEventListener("click", () => removePersonalDefaultItem(group.key, item.name));
+
+        actions.appendChild(deleteBtn);
+        row.append(copy, actions);
+        section.appendChild(row);
+      });
+    }
+
+    elements.personalDefaultsList.appendChild(section);
+  });
+}
+
+function formatSavedAt(value) {
+  try {
+    return new Intl.DateTimeFormat("nl-NL", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(value));
+  } catch {
+    return "";
+  }
+}
+
+function renderSavedTrips() {
+  elements.savedTripsList.innerHTML = "";
+  const query = elements.savedTripsSearch.value.trim().toLowerCase();
+  const sortMode = elements.savedTripsSort.value;
+  elements.savedTripsClear.classList.toggle("hidden", !query);
+  const filteredTrips = savedTrips.filter((savedTrip) => {
+    if (!query) return true;
+    const haystack = [
+      savedTrip.name,
+      getTripProfileLabel(savedTrip.trip),
+      savedTrip.trip.notes || "",
+    ].join(" ").toLowerCase();
+    return haystack.includes(query);
+  });
+
+  if (!savedTrips.length) {
+    const emptyNote = document.createElement("p");
+    emptyNote.className = "empty-note";
+    emptyNote.textContent = "Nog geen trips opgeslagen.";
+    elements.savedTripsList.appendChild(emptyNote);
+    return;
+  }
+
+  if (!filteredTrips.length) {
+    const emptyNote = document.createElement("p");
+    emptyNote.className = "empty-note";
+    emptyNote.textContent = "Geen opgeslagen trips gevonden.";
+    elements.savedTripsList.appendChild(emptyNote);
+    return;
+  }
+
+  filteredTrips.slice().sort((a, b) => {
+    if (sortMode === "name") {
+      return a.name.localeCompare(b.name, "nl");
+    }
+    if (sortMode === "oldest") {
+      return new Date(a.savedAt) - new Date(b.savedAt);
+    }
+    return new Date(b.savedAt) - new Date(a.savedAt);
+  }).forEach((savedTrip) => {
+    const row = document.createElement("div");
+    row.className = "saved-trip-row";
+
+    const copy = document.createElement("div");
+    copy.className = "saved-trip-copy";
+    copy.innerHTML = `<span class="saved-trip-name">${savedTrip.name}</span><span class="saved-trip-meta">${getTripProfileLabel(savedTrip.trip)} - ${formatSavedAt(savedTrip.savedAt)}</span>`;
+
+    const actions = document.createElement("div");
+    actions.className = "saved-trip-actions";
+
+    const openBtn = document.createElement("button");
+    openBtn.type = "button";
+    openBtn.className = "mini-btn";
+    openBtn.textContent = "Open";
+    openBtn.addEventListener("click", () => openSavedTrip(savedTrip.id));
+
+    const duplicateBtn = document.createElement("button");
+    duplicateBtn.type = "button";
+    duplicateBtn.className = "mini-btn";
+    duplicateBtn.textContent = "Kopie";
+    duplicateBtn.addEventListener("click", () => duplicateSavedTrip(savedTrip.id));
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "mini-btn danger";
+    deleteBtn.textContent = "Verwijder";
+    deleteBtn.addEventListener("click", () => deleteSavedTrip(savedTrip.id));
+
+    actions.append(openBtn, duplicateBtn, deleteBtn);
+    row.append(copy, actions);
+    elements.savedTripsList.appendChild(row);
+  });
+}
+
+function renderSuggestions() {
+  const suggestionData = appState.trip ? getSuggestionsForTrip(appState.trip, appState.items) : null;
+
+  elements.suggestedItems.innerHTML = "";
+  elements.suggestionsMeta.textContent = "";
+  elements.removedItemsNote.textContent = "";
+  elements.removedItemsNote.classList.add("hidden");
+
+  if (!suggestionData || (!suggestionData.suggestedItems.length && !(suggestionData.removedItems || []).length)) {
+    elements.suggestionsPanel.classList.add("hidden");
+    return;
+  }
+
+  elements.suggestionsPanel.classList.remove("hidden");
+  elements.suggestionsMeta.textContent = `Onthouden voor ${getTripProfileLabel(appState.trip)}`;
+
+  suggestionData.suggestedItems.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = "suggestion-row";
+
+    const copy = document.createElement("div");
+    copy.className = "suggestion-copy";
+    copy.innerHTML = `<span class="suggestion-name">${item.name}</span><span class="suggestion-category">${item.category}</span>`;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "suggestion-btn";
+    button.textContent = "Toevoegen";
+    button.addEventListener("click", () => addSuggestedItem(item));
+
+    row.append(copy, button);
+    elements.suggestedItems.appendChild(row);
+  });
+
+  if (suggestionData.removedItems?.length) {
+    const removedNames = suggestionData.removedItems.map((item) => item.name).join(", ");
+    elements.removedItemsNote.textContent = `Eerder verwijderd bij dit profiel: ${removedNames}.`;
+    elements.removedItemsNote.classList.remove("hidden");
+  }
+}
+
+function renderPackingList() {
+  elements.packingList.innerHTML = "";
+
+  const sourceItems = appState.filterUnchecked ? appState.items.filter((item) => !item.packed) : appState.items;
+
+  if (!sourceItems.length) {
+    const emptyNote = document.createElement("p");
+    emptyNote.className = "empty-note";
+    emptyNote.textContent = appState.filterUnchecked ? "Alles staat al op ingepakt." : "Nog geen items in deze lijst.";
+    elements.packingList.appendChild(emptyNote);
+    return;
+  }
+  categories.forEach((category) => {
+    const visibleItems = sourceItems.filter((item) => item.category === category);
+    if (appState.filterUnchecked && !visibleItems.length) return;
+
+    const categoryCard = document.createElement("section");
+    categoryCard.className = "category-card";
+    categoryCard.dataset.category = category;
+    categoryCard.addEventListener("dragover", handleCategoryDragOver);
+    categoryCard.addEventListener("dragenter", handleCategoryDragEnter);
+    categoryCard.addEventListener("dragleave", handleCategoryDragLeave);
+    categoryCard.addEventListener("drop", handleCategoryDrop);
+
+    const top = document.createElement("div");
+    top.className = "category-top";
+    top.innerHTML = `<h3>${category}</h3><span class="category-count">${visibleItems.length} item(s)</span>`;
+
+    const list = document.createElement("div");
+    list.className = "item-list";
+
+    if (!visibleItems.length) {
+      const emptyNote = document.createElement("p");
+      emptyNote.className = "empty-note";
+      emptyNote.textContent = "Sleep een item hierheen.";
+      list.appendChild(emptyNote);
+    }
+
+    visibleItems.forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "item-row";
+      row.draggable = true;
+      row.dataset.itemId = item.id;
+      row.addEventListener("dragstart", handleItemDragStart);
+      row.addEventListener("dragend", handleItemDragEnd);
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = item.packed;
+      checkbox.addEventListener("change", () => togglePacked(item.id));
+
+      const label = document.createElement("span");
+      label.className = `item-label ${item.packed ? "packed" : ""}`;
+      label.textContent = item.name;
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "item-delete";
+      deleteBtn.type = "button";
+      deleteBtn.textContent = "x";
+      deleteBtn.setAttribute("aria-label", `Verwijder ${item.name}`);
+      deleteBtn.addEventListener("click", () => deleteItem(item.id));
+
+      row.append(checkbox, label, deleteBtn);
+      list.appendChild(row);
+    });
+
+    categoryCard.append(top, list);
+    elements.packingList.appendChild(categoryCard);
+  });
+
+  if (!elements.packingList.children.length) {
+    const emptyNote = document.createElement("p");
+    emptyNote.className = "empty-note";
+    emptyNote.textContent = "Alles staat al op ingepakt.";
+    elements.packingList.appendChild(emptyNote);
+  }
+}
+
+function render() {
+  updateSaveTripButton();
+  elements.filterUnpacked.checked = appState.filterUnchecked;
+  elements.tripNotes.value = appState.trip?.notes || "";
+
+  if (!appState.trip || !appState.items.length) {
+    elements.packingSection.classList.add("hidden");
+    elements.suggestionsPanel.classList.add("hidden");
+    return;
+  }
+
+  elements.packingSection.classList.remove("hidden");
+  elements.tripTitle.textContent = getTripDisplayName(appState.trip);
+
+  const packedCount = appState.items.filter((item) => item.packed).length;
+  const totalCount = appState.items.length;
+  const percentage = totalCount ? Math.round((packedCount / totalCount) * 100) : 0;
+
+  elements.progressText.textContent = `${packedCount} van ${totalCount} ingepakt`;
+  elements.progressBar.style.width = `${percentage}%`;
+
+  renderSuggestions();
   renderPackingList();
-})();
+}
+
+function addPersonalDefaultItem() {
+  const name = elements.personalItemName.value.trim();
+  const category = elements.personalItemCategory.value;
+  const scope = elements.personalItemScope.value;
+  const weatherScope = elements.personalItemWeather.value;
+  if (!name) return;
+
+  let targetList;
+  if (scope !== "always" && weatherScope !== "any") {
+    const comboKey = `${scope}__${weatherScope}`;
+    if (!settingsState.comboTypes[comboKey]) settingsState.comboTypes[comboKey] = [];
+    targetList = settingsState.comboTypes[comboKey];
+  } else if (weatherScope !== "any") {
+    targetList = settingsState.weatherTypes[weatherScope];
+  } else if (scope === "always") {
+    targetList = settingsState.always;
+  } else {
+    targetList = settingsState.tripTypes[scope];
+  }
+  const exists = targetList.some((item) => normalizeItemName(item.name) === normalizeItemName(name));
+  if (exists) {
+    elements.personalItemName.value = "";
+    return;
+  }
+
+  targetList.push({ name, category });
+  saveSettings();
+  renderPersonalDefaults();
+  elements.personalItemName.value = "";
+  elements.personalItemScope.value = "always";
+  elements.personalItemWeather.value = "any";
+}
+
+function removePersonalDefaultItem(scope, itemName) {
+  let targetList;
+  if (scope.startsWith("combo:")) {
+    const comboKey = scope.split(":")[1];
+    targetList = settingsState.comboTypes[comboKey] || [];
+  } else if (scope.startsWith("weather:")) {
+    const weatherScope = scope.split(":")[1];
+    targetList = settingsState.weatherTypes[weatherScope];
+  } else {
+    targetList = scope === "always" ? settingsState.always : settingsState.tripTypes[scope];
+  }
+  const nextItems = targetList.filter((item) => normalizeItemName(item.name) !== normalizeItemName(itemName));
+
+  if (scope.startsWith("combo:")) {
+    const comboKey = scope.split(":")[1];
+    if (nextItems.length) {
+      settingsState.comboTypes[comboKey] = nextItems;
+    } else {
+      delete settingsState.comboTypes[comboKey];
+    }
+  } else if (scope.startsWith("weather:")) {
+    const weatherScope = scope.split(":")[1];
+    settingsState.weatherTypes[weatherScope] = nextItems;
+  } else if (scope === "always") {
+    settingsState.always = nextItems;
+  } else {
+    settingsState.tripTypes[scope] = nextItems;
+  }
+
+  saveSettings();
+  renderPersonalDefaults();
+}
+
+function saveCurrentTrip() {
+  if (!appState.trip) return;
+  const wasExistingTrip = Boolean(appState.savedTripId);
+
+  const record = {
+    id: appState.savedTripId || uniqueId(),
+    name: getTripDisplayName(appState.trip),
+    trip: normalizeTrip(appState.trip),
+    items: appState.items.map((item) => ({ name: item.name, category: item.category, packed: Boolean(item.packed) })),
+    savedAt: new Date().toISOString(),
+  };
+
+  const existingIndex = savedTrips.findIndex((entry) => entry.id === record.id);
+  if (existingIndex === -1) {
+    savedTrips.unshift(record);
+  } else {
+    savedTrips[existingIndex] = record;
+  }
+
+  appState.savedTripId = record.id;
+  saveSavedTrips();
+  saveState();
+  renderSavedTrips();
+  render();
+  showSaveTripFeedback(wasExistingTrip ? "Trip bijgewerkt" : "Trip opgeslagen");
+}
+
+function openSavedTrip(id) {
+  const savedTrip = savedTrips.find((entry) => entry.id === id);
+  if (!savedTrip) return;
+
+  persistHistoryForCurrentTrip();
+  appState = {
+    trip: normalizeTrip(savedTrip.trip),
+    items: cloneItemsWithFreshIds(savedTrip.items),
+    savedTripId: savedTrip.id,
+    filterUnchecked: false,
+  };
+
+  saveState();
+  fillFormFromState();
+  render();
+}
+
+function makeCopyName(name) {
+  return name.endsWith("(kopie)") ? `${name} 2` : `${name} (kopie)`;
+}
+
+function duplicateSavedTrip(id) {
+  const savedTrip = savedTrips.find((entry) => entry.id === id);
+  if (!savedTrip) return;
+
+  const duplicateTrip = normalizeTrip(savedTrip.trip);
+  duplicateTrip.tripName = makeCopyName(getTripDisplayName(savedTrip.trip));
+
+  savedTrips.unshift({
+    id: uniqueId(),
+    name: duplicateTrip.tripName,
+    trip: duplicateTrip,
+    items: savedTrip.items.map((item) => ({ name: item.name, category: item.category, packed: Boolean(item.packed) })),
+    savedAt: new Date().toISOString(),
+  });
+
+  saveSavedTrips();
+  renderSavedTrips();
+  showSaveTripFeedback("Kopie gemaakt");
+}
+
+function deleteSavedTrip(id) {
+  savedTrips = savedTrips.filter((entry) => entry.id !== id);
+  if (appState.savedTripId === id) {
+    appState.savedTripId = null;
+    saveState();
+  }
+  saveSavedTrips();
+  renderSavedTrips();
+  render();
+}
+function togglePacked(id) {
+  appState.items = appState.items.map((item) => item.id === id ? { ...item, packed: !item.packed } : item);
+  commitState({ syncSavedTrip: true });
+  render();
+}
+
+function deleteItem(id) {
+  appState.items = appState.items.filter((item) => item.id !== id);
+  commitState({ updateHistory: true, syncSavedTrip: true });
+  render();
+}
+
+function addItemToCurrentList(name, category) {
+  if (!appState.trip) return false;
+
+  const cleanName = name.trim();
+  if (!cleanName) return false;
+
+  const exists = appState.items.some((item) => normalizeItemName(item.name) === normalizeItemName(cleanName));
+  if (exists) return false;
+
+  appState.items.push(makeItem(cleanName, category));
+  commitState({ updateHistory: true, syncSavedTrip: true });
+  render();
+  return true;
+}
+
+function addCustomItem() {
+  const name = elements.customItemName.value.trim();
+  const category = elements.customItemCategory.value;
+  if (!name) return;
+
+  addItemToCurrentList(name, category);
+  elements.customItemName.value = "";
+}
+
+function addSuggestedItem(item) {
+  addItemToCurrentList(item.name, item.category);
+}
+
+function moveItemToCategory(itemId, category) {
+  let changed = false;
+
+  appState.items = appState.items.map((item) => {
+    if (item.id !== itemId || item.category === category) return item;
+    changed = true;
+    return { ...item, category };
+  });
+
+  if (!changed) return;
+
+  commitState({ syncSavedTrip: true });
+  render();
+}
+
+function handleItemDragStart(event) {
+  const itemId = event.currentTarget.dataset.itemId;
+  if (!itemId) return;
+
+  draggedItemId = itemId;
+  event.currentTarget.classList.add("dragging");
+
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", itemId);
+  }
+}
+
+function handleItemDragEnd(event) {
+  draggedItemId = null;
+  event.currentTarget.classList.remove("dragging");
+  clearCategoryDropState();
+}
+
+function handleCategoryDragOver(event) {
+  if (!draggedItemId) return;
+  event.preventDefault();
+}
+
+function handleCategoryDragEnter(event) {
+  if (!draggedItemId) return;
+  event.currentTarget.classList.add("drop-target");
+}
+
+function handleCategoryDragLeave(event) {
+  if (!event.currentTarget.contains(event.relatedTarget)) {
+    event.currentTarget.classList.remove("drop-target");
+  }
+}
+
+function handleCategoryDrop(event) {
+  event.preventDefault();
+  const itemId = event.dataTransfer?.getData("text/plain") || draggedItemId;
+  const category = event.currentTarget.dataset.category;
+  clearCategoryDropState();
+
+  if (!itemId || !category) return;
+  moveItemToCategory(itemId, category);
+}
+
+function clearCategoryDropState() {
+  document.querySelectorAll(".category-card.drop-target").forEach((card) => {
+    card.classList.remove("drop-target");
+  });
+}
+
+function resetTrip() {
+  persistHistoryForCurrentTrip();
+  appState = createEmptyAppState();
+  saveState();
+  elements.form.reset();
+  elements.tripDays.value = 3;
+  elements.tripType.value = "kamp";
+  setSelectedWeather(["normaal"]);
+  elements.tripOvernight.value = "ja";
+  elements.tripNotes.value = "";
+  render();
+}
+
+function handleSubmit(event) {
+  event.preventDefault();
+  persistHistoryForCurrentTrip();
+
+  const tripName = elements.tripName.value.trim();
+  const tripType = elements.tripType.value;
+  const days = Math.max(1, Number(elements.tripDays.value) || 1);
+  const weather = getSelectedWeather();
+  const overnight = elements.tripOvernight.value;
+  const notes = elements.tripNotes.value.trim();
+
+  appState = generatePackingList({ tripName, tripType, days, weather, overnight, notes });
+  saveState();
+  render();
+}
+
+function handleWeatherChange(event) {
+  if (event.target.name !== "trip-weather") return;
+
+  if (event.target.value === "normaal" && event.target.checked) {
+    elements.tripWeather.forEach((input) => {
+      if (input.value !== "normaal") input.checked = false;
+    });
+    return;
+  }
+
+  if (event.target.value !== "normaal" && event.target.checked) {
+    const normalOption = elements.tripWeather.find((input) => input.value === "normaal");
+    if (normalOption) normalOption.checked = false;
+  }
+
+  if (!elements.tripWeather.some((input) => input.checked)) {
+    const normalOption = elements.tripWeather.find((input) => input.value === "normaal");
+    if (normalOption) normalOption.checked = true;
+  }
+}
+
+function handleThemeChange(event) {
+  applyTheme(event.target.value);
+  saveTheme(themeState);
+}
+
+function handleFilterChange() {
+  appState.filterUnchecked = elements.filterUnpacked.checked;
+  saveState();
+  render();
+}
+
+function handleNotesInput() {
+  if (!appState.trip) return;
+  appState.trip.notes = elements.tripNotes.value;
+  commitState({ syncSavedTrip: true });
+}
+
+function showSaveTripFeedback(message) {
+  elements.saveTripFeedback.textContent = message;
+  elements.saveTripFeedback.classList.remove("hidden");
+
+  if (saveTripFeedbackTimer) clearTimeout(saveTripFeedbackTimer);
+  saveTripFeedbackTimer = setTimeout(() => {
+    elements.saveTripFeedback.classList.add("hidden");
+    elements.saveTripFeedback.textContent = "";
+  }, 1800);
+}
+
+function clearSavedTripsSearch() {
+  elements.savedTripsSearch.value = "";
+  renderSavedTrips();
+}
+
+elements.form.addEventListener("submit", handleSubmit);
+elements.form.addEventListener("change", handleWeatherChange);
+elements.resetBtn.addEventListener("click", resetTrip);
+elements.addItemBtn.addEventListener("click", addCustomItem);
+elements.customItemName.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    addCustomItem();
+  }
+});
+elements.addPersonalItemBtn.addEventListener("click", addPersonalDefaultItem);
+elements.personalItemName.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    addPersonalDefaultItem();
+  }
+});
+elements.themeSelect.addEventListener("change", handleThemeChange);
+elements.filterUnpacked.addEventListener("change", handleFilterChange);
+elements.saveTripBtn.addEventListener("click", saveCurrentTrip);
+elements.tripNotes.addEventListener("input", handleNotesInput);
+elements.savedTripsSearch.addEventListener("input", renderSavedTrips);
+elements.savedTripsClear.addEventListener("click", clearSavedTripsSearch);
+elements.savedTripsSort.addEventListener("change", renderSavedTrips);
+
+applyTheme(themeState);
+fillFormFromState();
+renderPersonalDefaults();
+renderSavedTrips();
+render();
