@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f172a" />
+    <title>PakSlim</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="hero card">
+        <div>
+          <p class="eyebrow">Slim inpakken</p>
+          <h1>PakSlim</h1>
+          <p class="subtitle">Maak snel een paklijst voor kamp, weekend weg, vakantie of dagje weg.</p>
+        </div>
+        <button id="themeToggle" class="ghost-btn" type="button">🌙 Thema</button>
+      </header>
+
+      <main>
+        <section class="card form-card">
+          <h2>Nieuwe trip</h2>
+          <form id="tripForm" class="trip-form">
+            <label>
+              <span>Trip naam</span>
+              <input type="text" id="tripName" placeholder="Bijv. Kamp Ardennen" required />
+            </label>
+
+            <div class="grid two">
+              <label>
+                <span>Type trip</span>
+                <select id="tripType">
+                  <option value="kamp">Kamp</option>
+                  <option value="weekend">Weekend weg</option>
+                  <option value="vakantie">Vakantie</option>
+                  <option value="dagje">Dagje weg</option>
+                </select>
+              </label>
+
+              <label>
+                <span>Aantal dagen</span>
+                <input type="number" id="tripDays" min="1" max="30" value="3" />
+              </label>
+            </div>
+
+            <fieldset>
+              <legend>Weer</legend>
+              <div class="chips" id="weatherGroup">
+                <label class="chip"><input type="checkbox" value="warm" /> <span>Warm</span></label>
+                <label class="chip"><input type="checkbox" value="normaal" checked /> <span>Normaal</span></label>
+                <label class="chip"><input type="checkbox" value="koud" /> <span>Koud</span></label>
+                <label class="chip"><input type="checkbox" value="regen" /> <span>Regen</span></label>
+              </div>
+            </fieldset>
+
+            <label class="inline-toggle">
+              <input type="checkbox" id="overnight" checked />
+              <span>Overnachting</span>
+            </label>
+
+            <label>
+              <span>Notities</span>
+              <textarea id="tripNotes" rows="3" placeholder="Bijv. sportdag op zaterdag of nette kleding nodig"></textarea>
+            </label>
+
+            <div class="actions">
+              <button class="primary-btn" type="submit">Genereer paklijst</button>
+              <button class="secondary-btn" type="button" id="saveTripBtn">Opslaan</button>
+              <button class="ghost-btn" type="button" id="resetBtn">Reset</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="card collapsible">
+          <div class="section-head">
+            <h2>Standaarditems</h2>
+            <button class="ghost-btn" type="button" data-toggle="defaultsPanel">Open</button>
+          </div>
+          <div id="defaultsPanel" class="panel hidden">
+            <div class="grid two">
+              <label>
+                <span>Type</span>
+                <select id="defaultType">
+                  <option value="always">Altijd meenemen</option>
+                  <option value="kamp">Alleen kamp</option>
+                  <option value="weekend">Alleen weekend</option>
+                  <option value="vakantie">Alleen vakantie</option>
+                  <option value="dagje">Alleen dagje weg</option>
+                </select>
+              </label>
+              <label>
+                <span>Item</span>
+                <input type="text" id="defaultItemInput" placeholder="Bijv. Oortjes" />
+              </label>
+            </div>
+            <button class="secondary-btn full" type="button" id="addDefaultBtn">Voeg standaarditem toe</button>
+            <div id="defaultLists" class="default-lists"></div>
+          </div>
+        </section>
+
+        <section class="card collapsible">
+          <div class="section-head">
+            <h2>Opgeslagen trips</h2>
+            <button class="ghost-btn" type="button" data-toggle="savedTripsPanel">Open</button>
+          </div>
+          <div id="savedTripsPanel" class="panel hidden">
+            <div id="savedTripsList" class="saved-trips"></div>
+          </div>
+        </section>
+
+        <section class="card list-card">
+          <div class="section-head wrap">
+            <div>
+              <h2>Paklijst</h2>
+              <p id="progressText" class="muted">Nog geen lijst gemaakt</p>
+            </div>
+            <label class="inline-toggle small">
+              <input type="checkbox" id="uncheckedOnly" />
+              <span>Alleen nog pakken</span>
+            </label>
+          </div>
+
+          <div class="add-row">
+            <select id="customCategory">
+              <option value="Essentieel">Essentieel</option>
+              <option value="Kleding">Kleding</option>
+              <option value="Toiletspullen">Toiletspullen</option>
+              <option value="Slapen">Slapen</option>
+              <option value="Elektronica">Elektronica</option>
+              <option value="Extra">Extra</option>
+            </select>
+            <input type="text" id="customItemInput" placeholder="Eigen item toevoegen" />
+            <button class="secondary-btn" type="button" id="addCustomItemBtn">Toevoegen</button>
+          </div>
+
+          <div id="packingList" class="packing-list empty-state">
+            Maak eerst een trip aan om je paklijst te zien.
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
