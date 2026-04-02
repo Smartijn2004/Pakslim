@@ -1,0 +1,11 @@
+{
+  "name": "PakSlim",
+  "short_name": "PakSlim",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "lang": "nl",
+  "description": "Een simpele en slimme paklijst-app voor telefoon en web.",
+  "icons": []
+}
