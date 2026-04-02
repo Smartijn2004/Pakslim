@@ -1,0 +1,387 @@
+:root {
+  --bg: #0f172a;
+  --bg-soft: #111c34;
+  --card: rgba(255, 255, 255, 0.08);
+  --card-solid: #172554;
+  --text: #e5eefc;
+  --muted: #b5c4e0;
+  --accent: #60a5fa;
+  --accent-strong: #3b82f6;
+  --border: rgba(255, 255, 255, 0.12);
+  --danger: #f87171;
+  --success: #34d399;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+}
+
+body.light {
+  --bg: #f3f7ff;
+  --bg-soft: #e8f0ff;
+  --card: rgba(255, 255, 255, 0.9);
+  --card-solid: #ffffff;
+  --text: #11203f;
+  --muted: #576784;
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
+  --border: rgba(17, 32, 63, 0.1);
+  --danger: #dc2626;
+  --success: #059669;
+  --shadow: 0 10px 24px rgba(31, 41, 55, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
+  color: var(--text);
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+.app-shell {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 16px 14px 40px;
+}
+
+main {
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  background: var(--card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+
+h1, h2, h3, p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 8px;
+}
+
+.subtitle, .muted {
+  color: var(--muted);
+}
+
+.trip-form, .panel {
+  display: grid;
+  gap: 14px;
+}
+
+.grid.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+label, fieldset {
+  display: grid;
+  gap: 8px;
+}
+
+label span, legend {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+input, select, textarea {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  padding: 12px 14px;
+  outline: none;
+}
+
+body.light input,
+body.light select,
+body.light textarea {
+  background: #fff;
+}
+
+textarea {
+  resize: vertical;
+}
+
+fieldset {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.chip input {
+  width: auto;
+  margin: 0;
+}
+
+.actions, .add-row, .section-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.actions {
+  flex-wrap: wrap;
+}
+
+.section-head {
+  justify-content: space-between;
+}
+
+.section-head.wrap {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.primary-btn,
+.secondary-btn,
+.ghost-btn,
+.danger-btn {
+  border: none;
+  border-radius: 14px;
+  padding: 11px 14px;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.primary-btn:hover,
+.secondary-btn:hover,
+.ghost-btn:hover,
+.danger-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: white;
+  font-weight: 700;
+}
+
+.secondary-btn {
+  background: rgba(96, 165, 250, 0.16);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.ghost-btn {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.danger-btn {
+  background: rgba(248, 113, 113, 0.16);
+  color: var(--danger);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+}
+
+.full {
+  width: 100%;
+}
+
+.inline-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inline-toggle input {
+  width: auto;
+}
+
+.small {
+  font-size: 0.92rem;
+}
+
+.hidden {
+  display: none;
+}
+
+.default-lists,
+.saved-trips,
+.packing-list {
+  display: grid;
+  gap: 12px;
+}
+
+.default-group,
+.saved-trip,
+.category {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.saved-trip-head,
+.category-head,
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.saved-trip-actions,
+.item-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.item-row {
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+
+.item-row:first-child {
+  border-top: none;
+}
+
+.item-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.item-main input[type="checkbox"] {
+  width: auto;
+}
+
+.checked {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(96, 165, 250, 0.16);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.empty-state {
+  color: var(--muted);
+  text-align: center;
+  padding: 20px;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+}
+
+.add-row {
+  flex-wrap: wrap;
+}
+
+.add-row input {
+  flex: 1;
+  min-width: 160px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(135deg, var(--success), var(--accent));
+  transition: width 0.2s ease;
+}
+
+@media (max-width: 720px) {
+  .grid.two {
+    grid-template-columns: 1fr;
+  }
+
+  .hero,
+  .section-head,
+  .saved-trip-head,
+  .category-head,
+  .item-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .saved-trip-actions,
+  .item-actions,
+  .actions {
+    width: 100%;
+  }
+
+  .saved-trip-actions button,
+  .item-actions button,
+  .actions button,
+  .add-row button {
+    flex: 1;
+  }
+
+  .add-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
