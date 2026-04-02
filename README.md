@@ -1,21 +1,33 @@
 # PakSlim
 
-PakSlim is een simpele mobiele webapp om paklijsten te maken voor kamp, weekend weg, vakantie of een dagje weg.
+PakSlim is een mobiele webapp om slimme paklijsten te maken voor kamp, weekend weg, vakantie of een dagje weg.
 
-## Functies
-- Trip aanmaken met type, duur, weer en notities
-- Automatische paklijst per categorie
-- Extra items zelf toevoegen
-- Persoonlijke standaarditems instellen
-- Trips opslaan, openen, dupliceren en verwijderen
-- Licht/donker thema
-- Lokaal opgeslagen in de browser
+## Wat de app kan
+- Trip aanmaken met naam, type, aantal dagen, weer, overnachting en notities
+- Meerdere weersomstandigheden kiezen
+- Automatische paklijst genereren per categorie
+- Persoonlijke standaarditems toevoegen
+  - altijd
+  - per triptype
+  - per weertype
+  - per combinatie van triptype en weer
+- Extra items handmatig toevoegen
+- Items afvinken als ingepakt
+- Items verwijderen
+- Items via drag-and-drop tussen categorieën verplaatsen
+- Opgeslagen trips openen, dupliceren, zoeken, sorteren en verwijderen
+- Onthouden van eerdere aanpassingen per tripprofiel
+- Thema's gebruiken
+- Alles lokaal opslaan in de browser
 
-## Bestanden
-- `index.html`
-- `style.css`
-- `script.js`
-- `manifest.json`
+## Bestandsstructuur
 
-## Gebruik
-Open `index.html` lokaal of zet de repo online via GitHub Pages.
+```text
+Pakslim/
+  index.html
+  style.css
+  script.js
+  manifest.json
+  icons/
+    icon-192.png
+    icon-512.png
